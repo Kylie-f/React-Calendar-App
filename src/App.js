@@ -3,31 +3,23 @@ import { GoogleOAuthProvider, GoogleLogin, googleLogout } from "@react-oauth/goo
 import axios from "axios";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import multiMonthPlugin from "@fullcalendar/multimonth";
 import interactionPlugin from "@fullcalendar/interaction";
 import dayjs from "dayjs";
+import "./index.css";
 
-const clientId = "781966425935-57n7rvokjfam5k14eq72qaigmk9adefl.apps.googleusercontent.com"; // Replace with your Google OAuth Client ID
+const clientId = "781966425935-57n7rvokjfam5k14eq72qaigmk9adefl.apps.googleusercontent.com";
 
 const App = () => {
   const [accessToken, setAccessToken] = useState(null);
   const [events, setEvents] = useState([]);
+  const [calendarView, setCalendarView] = useState("dayGridMonth"); // Default view
 
   const handleLoginSuccess = async (response) => {
     console.log("Login Success:", response);
-
-    // Exchange JWT credential for an OAuth access token
-    try {
-      const res = await axios.post("https://oauth2.googleapis.com/token", {
-        client_id: clientId,
-        grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-        assertion: response.credential,
-      });
-
-      setAccessToken(res.data.access_token);
-      fetchEvents(res.data.access_token);
-    } catch (error) {
-      console.error("Error exchanging token:", error);
-    }
+    setAccessToken(response.credential);
+    fetchEvents(response.credential);
   };
 
   const handleLoginFailure = (error) => {
@@ -38,9 +30,7 @@ const App = () => {
     try {
       const res = await axios.get(
         "https://www.googleapis.com/calendar/v3/calendars/primary/events",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const formattedEvents = res.data.items.map((event) => ({
@@ -97,10 +87,6 @@ const App = () => {
         end: endDateTime,
       };
 
-      console.log("New Event:", newEvent);
-      console.log("Updated Events:", [...events, newEvent]);
-
-      // Update the events state
       setEvents((prevEvents) => [...prevEvents, newEvent]);
       alert("Event added!");
     } catch (error) {
@@ -116,21 +102,39 @@ const App = () => {
 
   return (
     <GoogleOAuthProvider clientId={clientId}>
-      <div className="App">
-        <h1>Google Calendar</h1>
-        {!accessToken ? (
-          <GoogleLogin onSuccess={handleLoginSuccess} onError={handleLoginFailure} />
-        ) : (
-          <div>
-            <button onClick={handleLogout}>Logout</button>
-            <button onClick={handleAddEvent}>➕ Add Event</button>
-            <FullCalendar
-              key={events.length} // Force re-render when events change
-              plugins={[dayGridPlugin, interactionPlugin]}
-              initialView="dayGridMonth"
-              events={events}
-            />
-          </div>
+      <div className={`app-container ${accessToken ? "logged-in" : ""}`}>
+        {/* Header Section */}
+        <header className="navbar">
+          <h1>Google Calendar App</h1>
+          {!accessToken ? (
+            <GoogleLogin onSuccess={handleLoginSuccess} onError={handleLoginFailure} />
+          ) : (
+            <div className="user-controls">
+              <button onClick={handleLogout}>Logout</button>
+              <button onClick={handleAddEvent}>➕ Add Event</button>
+            </div>
+          )}
+        </header>
+
+        {/* Calendar Controls */}
+        {accessToken && (
+          <>
+            <div className="view-controls">
+              <button onClick={() => setCalendarView("timeGridDay")}>Day View</button>
+              <button onClick={() => setCalendarView("dayGridMonth")}>Month View</button>
+              <button onClick={() => setCalendarView("multiMonthYear")}>Year View</button>
+            </div>
+
+            {/* Calendar Display */}
+            <div className="calendar-container">
+              <FullCalendar
+                key={calendarView} // Forces re-render on view change
+                plugins={[dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin]}
+                initialView={calendarView}
+                events={events}
+              />
+            </div>
+          </>
         )}
       </div>
     </GoogleOAuthProvider>

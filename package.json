@@ -7,7 +7,9 @@
     "@emotion/styled": "^11.14.0",
     "@fullcalendar/daygrid": "^6.1.15",
     "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/multimonth": "^6.1.15",
     "@fullcalendar/react": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
     "@mui/material": "^6.4.6",
     "@react-oauth/google": "^0.12.1",
     "@testing-library/dom": "^10.4.0",
@@ -17,6 +19,7 @@
     "axios": "^1.8.1",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
+    "jwt-decode": "^4.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.2.0",
@@ -46,5 +49,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.0.9"
   }
 }
